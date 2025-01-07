@@ -1,0 +1,14 @@
+{
+  "targets": {
+    "cardgame-f9590": {
+      "hosting": {
+        "cardgame": [
+          "cardgame-f9590"
+        ]
+      }
+    }
+  },
+  "projects": {
+    "default": "cardgame-f9590"
+  }
+}
