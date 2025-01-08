@@ -5,10 +5,10 @@ import { Injectable } from '@angular/core';
 })
 export class GameDatasService {
 
-  players: string[] = [];
-  cardStack: string[] = [];
-  playedCards: string[] = [];
-  currentPLayer: number = 0;
+  public players: string[] = [];
+  public cardStack: string[] = [];
+  public playedCards: string[] = [];
+  public currentPLayer: number = 0;
 
   constructor() {
     for (let i = 1; i < 14; i++) {
@@ -18,8 +18,6 @@ export class GameDatasService {
       this.cardStack.push('pik-' + i);
     }
     shuffle(this.cardStack);
-
-
   }
 
   public toJson() {

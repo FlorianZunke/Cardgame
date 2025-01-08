@@ -10,13 +10,12 @@ import { GameInfoComponent } from '../shared/components/game-info/game-info.comp
 import { Firestore, collectionData, collection, doc, updateDoc, onSnapshot, addDoc } from '@angular/fire/firestore';
 import { AsyncPipe } from '@angular/common';
 import { Observable } from 'rxjs';
-import { error } from 'console';
-
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-game',
   standalone: true,
-  imports: [CommonModule, PlayerComponent, MatButtonModule, MatIconModule, GameInfoComponent, AsyncPipe],
+  imports: [CommonModule, PlayerComponent, MatButtonModule, MatIconModule, GameInfoComponent],
   templateUrl: './game.component.html',
   styleUrl: './game.component.scss'
 })
@@ -25,26 +24,29 @@ import { error } from 'console';
 export class GameComponent {
   currentCard: string = '';
   drawCardAnimation: boolean = false;
-  game = inject(GameDatasService);
   firestore: Firestore = inject(Firestore);
+
 
   unSubGame;
 
-  constructor(public dialog: MatDialog) {
+  game = inject(GameDatasService);
+  // game: GameDatasService = new GameDatasService;
 
-    this.unSubGame = onSnapshot(this.getGamesRef(), (game) => {
-      game.forEach((element) => (console.log(element.id)
-      ))
-    });
+ 
+  constructor( private route: ActivatedRoute, public dialog: MatDialog ) {
+
+    this.unSubGame = this.subGamesList();
+
   }
+
 
   ngOnInit(): void {
-    this.startGame();
-  }
+    // this.newGame();
 
-
-  ngOnChanges() {
-    this.updateGame(this.getGamesRef().id, 'R4Ux6ctksf4xYd0yVis6', this.game.toJson());
+    this.route.params.subscribe((params) => {
+      console.log(params);
+      // Muss man das nicht unsubscriben??
+    });
   }
 
 
@@ -53,20 +55,27 @@ export class GameComponent {
   }
 
 
-  async updateGame(collId: string, docId: string, item: {}) {
-    await updateDoc(this.getSingleGamesRef(collId, docId), item).catch(
-      (err) => { console.log(err); }
-    );
-  }
-
-
-  async addGame(item: {}) {
-    await addDoc(this.getGamesRef(), item).catch((err) => {
+  async addGame() {
+    await addDoc(this.getGamesRef(), this.game.toJson()).catch((err) => {
       console.error(err);
     }
     ).then((docRef) => {
-      console.log('Games with ID:', docRef);
+      // console.log('Games with ID:', docRef);
     })
+  }
+
+  async updateGame(game: GameDatasService) {
+    await updateDoc(this.getSingleGamesRef('games', 'A6DoGpL8kn0FngcV0zAJ'), {
+    });
+    
+  }
+
+
+  subGamesList() {
+    return onSnapshot(this.getGamesRef(), (game: any) => {
+      game.forEach((element: any) => (console.log(element.data(), element.id)
+      ))
+    });
   }
 
 
@@ -101,9 +110,9 @@ export class GameComponent {
   }
 
 
-  startGame() {
+  newGame() {
     this.game = new GameDatasService;
-    this.addGame(this.game.toJson);
+    this.addGame();
   }
 
 
@@ -114,9 +123,8 @@ export class GameComponent {
     dialogRef.afterClosed().subscribe((name: string) => {
 
       if (name && name.length > 0) {
-        this.game.players.push(name)
+        this.game.players.push(name);
       }
     });
   }
-
 }
