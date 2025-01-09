@@ -7,7 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatDialog } from '@angular/material/dialog';
 import { DialogAddPlayerComponent } from './dialog-add-player/dialog-add-player.component';
 import { GameInfoComponent } from '../shared/components/game-info/game-info.component';
-import { Firestore, collectionData, collection, doc, updateDoc, onSnapshot, addDoc } from '@angular/fire/firestore';
+import { updateDoc, onSnapshot } from '@angular/fire/firestore';
 import { AsyncPipe } from '@angular/common';
 import { Observable } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
@@ -22,30 +22,28 @@ import { ActivatedRoute } from '@angular/router';
 
 
 export class GameComponent {
-  currentCard: string = '';
-  drawCardAnimation: boolean = false;
-  firestore: Firestore = inject(Firestore);
-
-
+  
+  // gameId: string;
+  game = inject(GameDatasService);
   unSubGame;
 
-  game = inject(GameDatasService);
-  // game: GameDatasService = new GameDatasService;
+  constructor(private route: ActivatedRoute, public dialog: MatDialog) {
 
- 
-  constructor( private route: ActivatedRoute, public dialog: MatDialog ) {
 
-    this.unSubGame = this.subGamesList();
-
+    this.unSubGame = this.subGamesList(); //Muss das in den Constructor? 
+    
   }
 
-
   ngOnInit(): void {
-    // this.newGame();
 
     this.route.params.subscribe((params) => {
       console.log(params);
-      // Muss man das nicht unsubscriben??
+      // this.gameId = params;
+
+      // this.firestore.collection('games').doc(this.gameId).valueChanges().subscribe((game: any) => {
+      // console.log('game updated', game)
+      // this.game.currenPlayer = currentPlayer})
+      
     });
   }
 
@@ -55,64 +53,44 @@ export class GameComponent {
   }
 
 
-  async addGame() {
-    await addDoc(this.getGamesRef(), this.game.toJson()).catch((err) => {
-      console.error(err);
-    }
-    ).then((docRef) => {
-      // console.log('Games with ID:', docRef);
-    })
-  }
-
-  async updateGame(game: GameDatasService) {
-    await updateDoc(this.getSingleGamesRef('games', 'A6DoGpL8kn0FngcV0zAJ'), {
-    });
-    
-  }
-
-
   subGamesList() {
-    return onSnapshot(this.getGamesRef(), (game: any) => {
-      game.forEach((element: any) => (console.log(element.data(), element.id)
+    return onSnapshot(this.game.getGamesRef(), (game) => {
+      game.forEach((element) => (console.log(element.data(), element.id)
       ))
     });
   }
 
 
-  getGamesRef() {
-    return collection(this.firestore, 'games');
-  }
-
-
-  getSingleGamesRef(collId: string, docId: string) {
-    return doc(collection(this.firestore, collId), docId)
+  async updateGame() {
+    await updateDoc(this.game.getSingleGamesRef('games', 'CMj0WQlU8i86MGXEuiaf'), {
+      players: this.game.players,
+      cardStack: this.game.cardStack,
+      playedCards: this.game.playedCards,
+      currentPLayer: this.game.currentPLayer
+    }).catch((err) => {
+      console.log('hat nicht geklappt', err);
+    })
   }
 
 
   drawCard() {
-    if (this.drawCardAnimation) return
-    else this.drawCardAnimation = true;
+    if (this.game.drawCardAnimation) return
+    else this.game.drawCardAnimation = true;
 
     let currentCards = this.game.cardStack.pop();
+    // this.updateGame();
 
     if (currentCards != undefined) {
-      this.currentCard = currentCards;
-
-
+      this.game.currentCard = currentCards;
       this.game.currentPLayer++;
       this.game.currentPLayer = this.game.currentPLayer % this.game.players.length;
     }
 
     setTimeout(() => {
-      this.drawCardAnimation = false;
-      this.game.playedCards.push(this.currentCard)
+      this.game.drawCardAnimation = false;
+      this.game.playedCards.push(this.game.currentCard)
+      // this.updateGame();
     }, 2000);
-  }
-
-
-  newGame() {
-    this.game = new GameDatasService;
-    this.addGame();
   }
 
 
@@ -121,9 +99,9 @@ export class GameComponent {
     });
 
     dialogRef.afterClosed().subscribe((name: string) => {
-
       if (name && name.length > 0) {
         this.game.players.push(name);
+        // this.updateGame();
       }
     });
   }

@@ -2,7 +2,9 @@ import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { addDoc, Firestore } from '@angular/fire/firestore';
 import { CommonModule } from '@angular/common';
-
+import { GameDatasService } from '../shared/game-datas.service';
+import { GameComponent } from '../game/game.component';
+import { ActivatedRoute } from '@angular/router';
 
 
 @Component({
@@ -15,23 +17,23 @@ import { CommonModule } from '@angular/common';
 
 
 export class StartScreenComponent {
-  firestore: Firestore = inject(Firestore);
+  game = inject(GameDatasService);
 
-  constructor(private router: Router) { }
+
+  constructor( private route: ActivatedRoute, private router: Router) { }
 
   newGame() {
-    // this.addGame();
-
-    this.router.navigateByUrl('/game');
+    this.addGame();
+    this.router.navigateByUrl('/game/gameId');
   }
 
-// Funktion gibt es schon in der game.component.ts
-  // async addGame() {
-  //   await addDoc(this.getGamesRef(), this.game.toJson()).catch((err) => {
-  //     console.error(err);
-  //   }
-  //   ).then((docRef) => {
-  //     // console.log('Games with ID:', docRef);
-  //   })
-  // }
+
+  async addGame() {
+    await addDoc(this.game.getGamesRef(), this.game.toJson()).catch((err) => {
+      console.error(err);
+    }
+    ).then((docRef) => {
+
+    })
+  }
 }
