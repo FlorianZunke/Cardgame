@@ -1,11 +1,8 @@
 import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { addDoc, Firestore } from '@angular/fire/firestore';
+import { addDoc, Firestore, collection } from '@angular/fire/firestore';
 import { CommonModule } from '@angular/common';
 import { GameDatasService } from '../shared/game-datas.service';
-import { GameComponent } from '../game/game.component';
-import { ActivatedRoute } from '@angular/router';
-
 
 @Component({
   selector: 'app-start-screen',
@@ -18,22 +15,20 @@ import { ActivatedRoute } from '@angular/router';
 
 export class StartScreenComponent {
   game = inject(GameDatasService);
+  firestore = inject(Firestore);
+  
+  
+  constructor( private router: Router ) { }
 
+  async newGame() {
+    let game = new GameDatasService(this.firestore);
 
-  constructor( private route: ActivatedRoute, private router: Router) { }
-
-  newGame() {
-    this.addGame();
-    this.router.navigateByUrl('/game/gameId');
-  }
-
-
-  async addGame() {
-    await addDoc(this.game.getGamesRef(), this.game.toJson()).catch((err) => {
-      console.error(err);
+    try {
+      const docRef = await addDoc(collection(this.firestore, 'games'), game.toJson());
+      await this.router.navigateByUrl(`/game/${docRef.id}`);
     }
-    ).then((docRef) => {
-
-    })
+    catch (err) {
+      console.error('Fehler beim Hinzufügen des Spiels: ', err);
+    }
   }
 }

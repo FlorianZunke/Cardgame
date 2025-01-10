@@ -1,7 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Firestore, collectionData, collection, doc, updateDoc, onSnapshot, addDoc } from '@angular/fire/firestore';
-import { Component, inject } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { Firestore, collection, doc } from '@angular/fire/firestore';
 
 @Injectable({
   providedIn: 'root'
@@ -9,8 +7,6 @@ import { ActivatedRoute } from '@angular/router';
 
 
 export class GameDatasService {
-  firestore: Firestore = inject(Firestore);
-  
   public players: string[] = [];
   public cardStack: string[] = [];
   public playedCards: string[] = [];
@@ -18,17 +14,17 @@ export class GameDatasService {
   public currentCard: string = '';
   public drawCardAnimation: boolean = false;
 
+  gameId: string | undefined;
+  
 
-  constructor() {
+  constructor(private firestore: Firestore) {
+    
     for (let i = 1; i < 14; i++) {
       this.cardStack.push('cross-' + i);
       this.cardStack.push('diamond-' + i);
       this.cardStack.push('heart-' + i);
       this.cardStack.push('pik-' + i);
     }
-
-    
-
     shuffle(this.cardStack);
   }
 
@@ -43,17 +39,13 @@ export class GameDatasService {
     }
   }
 
-  
   getGamesRef() {
     return collection(this.firestore, 'games');
   }
 
-
-  getSingleGamesRef(collId: string, docId: string) {
+  getSingleGamesRef(collId: string, docId:string) {
     return doc(collection(this.firestore, collId), docId)
   }
-
-  
 }
 
 
@@ -71,6 +63,4 @@ function shuffle(cardStack: string[]) {
     [cardStack[currentIndex], cardStack[randomIndex]] = [
       cardStack[randomIndex], cardStack[currentIndex]];
   }
-
-  
 }
